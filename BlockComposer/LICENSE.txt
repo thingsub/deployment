@@ -1,0 +1,17 @@
+# LICENSE.txt
+
+## 프로젝트명
+Block Composer
+
+## 소리 파일 출처 및 라이센스 정보
+
+- **출처**: https://scratch.mit.edu/projects/editor/?tutorial=getStarted
+- **저작권자**: Scratch (https://scratch.mit.edu/)
+- **라이센스**: 크리에이티브 커먼즈 저작자표시-동일조건변경허락 (CC BY-SA)
+- **라이센스 링크**: https://creativecommons.org/licenses/by-sa/4.0/
+
+## 변경 사항
+
+## 참고 사항
+- 모든 소리 파일은 크리에이티브 커먼즈 저작자표시-동일조건변경허락 (CC BY-SA) 라이센스에 따라 사용됩니다.
+- 파일의 수정 여부와 변경 사항은 [변경 사항]에 기재됩니다.
