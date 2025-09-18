@@ -11,9 +11,11 @@ const cookieParser = require("cookie-parser");
 
 const cors = require("cors");
 
+const isProd = process.env.NODE_ENV === "production";
+
 app.use(
   cors({
-    origin: "http://localhost:3000", // 프론트엔드 URL
+    origin: isProd ? "https://rbmate.com" : "http://localhost:3000",
     methods: "GET,POST",
     credentials: true, // 쿠키를 허용할 경우
   })
@@ -50,8 +52,6 @@ app.use(
 
 // 에러 핸들링 미들웨어
 
-const isProd = process.env.NODE_ENV === "production";
-
 app.use((err, req, res, next) => {
   console.error("서버 오류:", err.stack || err);
   res.status(500).json({
@@ -70,7 +70,6 @@ db.connect();
 //   console.log("Hello World");
 // });
 
-
 // // 서버 실행 (로컬 환경에서는 3000 포트로 설정)
 // const port = process.env.PORT || 3002; // 로컬에서 사용할 포트 번호
 
@@ -79,9 +78,8 @@ db.connect();
 //   console.log(`서버가 http://localhost:${port}에서 실행 중입니다.`);
 // });
 
-
 // 배포용 서버 코드를 활성화합니다.
 const port = process.env.PORT || 20001; // 회사에서 지정한 포트
 server.listen(port, "0.0.0.0", () => {
-    console.log(`서버가 http://0.0.0.0:${port}에서 실행 중입니다.`);
+  console.log(`서버가 http://0.0.0.0:${port}에서 실행 중입니다.`);
 });
