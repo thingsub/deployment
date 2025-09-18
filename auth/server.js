@@ -32,10 +32,10 @@ app.use(express.urlencoded({ extended: true }));
 
 // 1. 당신의 인증 API 라우팅을 먼저 처리
 // 이렇게 해야 auth로 시작하는 요청이 정적 파일로 처리되지 않습니다.
-app.use("/auth", authRoutes);
+app.use("/api/auth", authRoutes);
 
 // 2. 당신의 React 앱(SPA)을 루트 경로('/')에 서비스
-app.use("/", express.static(path.join(__dirname, "frontend", "build")));
+app.use("/auth", express.static(path.join(__dirname, "frontend", "build")));
 
 // 3. 기존 컴포저들을 위한 정적 파일 서빙
 // 루트 경로에 대한 라우팅이 정의된 이후에 이 라우팅을 정의해야 합니다.
@@ -79,7 +79,7 @@ db.connect();
 // });
 
 // 배포용 서버 코드를 활성화합니다.
-const port = process.env.PORT || 20001; // 회사에서 지정한 포트
+const port = process.env.PORT || 8081; // 회사에서 지정한 포트
 server.listen(port, "0.0.0.0", () => {
   console.log(`서버가 http://0.0.0.0:${port}에서 실행 중입니다.`);
 });
