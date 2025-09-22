@@ -25,7 +25,7 @@ const Login = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:3002/auth/me", { withCredentials: true })
+      .get("http://localhost:3002/api/auth/me", { withCredentials: true })
       .then((res) => {
         if (res.status === 200) navigate("/home");
       })
@@ -44,7 +44,7 @@ const Login = () => {
     const checkPasswordExists = async () => {
       try {
         const res = await axios.get(
-          `http://localhost:3002/auth/check-password/${encodeURIComponent(id)}`,
+          `http://localhost:3002/api/auth/check-password/${encodeURIComponent(id)}`,
           { withCredentials: true }
         );
         // 서버에서 비밀번호 존재 여부 boolean 반환 가정
@@ -73,7 +73,7 @@ const Login = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:3002/auth/login",
+        "http://localhost:3002/api/auth/login",
         { id, password },
         { withCredentials: true }
       );
@@ -102,7 +102,7 @@ const Login = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:3002/auth/account-mapping",
+        "http://localhost:3002/api/auth/account-mapping",
         { googleId, email, name },
         { withCredentials: true }
       );
