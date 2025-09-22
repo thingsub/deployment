@@ -2,7 +2,8 @@
 
 import axios from "axios";
 
-const API_BASE = process.env.REACT_APP_API_BASE_URL || "http://localhost:3002/api";
+const API_BASE =
+  process.env.REACT_APP_API_BASE_URL || "http://localhost:3002/api";
 
 const api = axios.create({
   baseURL: API_BASE,
@@ -29,3 +30,15 @@ export const googleCallback = (code) => {
 
 export const getAccountMappingStatus = () =>
   api.get("/auth/check-account-mapping");
+
+// 비밀번호 존재 여부 확인
+export const checkPasswordExists = (id) =>
+  api.get(`/auth/check-password/${encodeURIComponent(id)}`);
+
+// 로그인
+export const login = (id, password) =>
+  api.post("/auth/login", { id, password });
+
+// 구글 계정 매핑
+export const accountMapping = (googleId, email, name) =>
+  api.post("/auth/account-mapping", { googleId, email, name });

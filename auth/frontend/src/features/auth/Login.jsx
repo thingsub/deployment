@@ -1,7 +1,6 @@
 // src/Components/Login.js
 
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import GoogleLoginButton from "./components/GoogleLoginButton";
 import {
@@ -12,8 +11,14 @@ import {
   Button,
   Divider,
   ErrorMessage,
- 
 } from "../../styles/loginStyles"; // 스타일 import
+
+import {
+  getUserInfo,
+  checkPasswordExists,
+  login,
+  accountMapping,
+} from "../../api/auth";
 
 const Login = () => {
   const [id, setId] = useState("");
@@ -24,8 +29,7 @@ const Login = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios
-      .get("http://localhost:3002/api/auth/me", { withCredentials: true })
+    getUserInfo()
       .then((res) => {
         if (res.status === 200) navigate("/home");
       })
@@ -37,25 +41,13 @@ const Login = () => {
   // id가 변경될 때마다 비밀번호 존재 여부 확인
   useEffect(() => {
     if (!id) {
-      setPasswordExists(true); // id가 비어있으면 일단 true로 초기화
+      setPasswordExists(true);
       return;
     }
 
-    const checkPasswordExists = async () => {
-      try {
-        const res = await axios.get(
-          `http://localhost:3002/api/auth/check-password/${encodeURIComponent(id)}`,
-          { withCredentials: true }
-        );
-        // 서버에서 비밀번호 존재 여부 boolean 반환 가정
-        setPasswordExists(res.data.passwordExists);
-      } catch (error) {
-        // 에러 시 기본 true로 두거나 적절히 처리
-        setPasswordExists(true);
-      }
-    };
-
-    checkPasswordExists();
+    checkPasswordExists(id)
+      .then((res) => setPasswordExists(res.data.passwordExists))
+      .catch(() => setPasswordExists(true));
   }, [id]);
 
   const loginUser = async (event) => {
@@ -72,11 +64,7 @@ const Login = () => {
     }
 
     try {
-      const response = await axios.post(
-        "http://localhost:3002/api/auth/login",
-        { id, password },
-        { withCredentials: true }
-      );
+      const response = await login(id, password);
 
       if (response.status === 200) {
         navigate("/home");
@@ -101,11 +89,7 @@ const Login = () => {
     const { googleId, email, name } = googleResponse.profileObj;
 
     try {
-      const response = await axios.post(
-        "http://localhost:3002/api/auth/account-mapping",
-        { googleId, email, name },
-        { withCredentials: true }
-      );
+      const response = await accountMapping(googleId, email, name);
 
       if (response.status === 200) {
         navigate("/home");
