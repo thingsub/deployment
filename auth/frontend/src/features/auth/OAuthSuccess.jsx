@@ -1,7 +1,7 @@
 // src/components/auth/OAuthSuccess.jsx
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getCurrentUser } from "../../api/auth";
+import { getUserInfo } from "../../api/auth";
 import { Container } from "../../styles/OAuthSuccessStyles";
 
 const OAuthSuccess = () => {
@@ -10,7 +10,7 @@ const OAuthSuccess = () => {
   useEffect(() => {
     const handleOAuthLogin = async () => {
       try {
-        const res = await getCurrentUser();
+        const res = await getUserInfo();
         const user = res.data;
 
         if (user?.provider === "google" && user?.mappingStatus !== "mapped") {

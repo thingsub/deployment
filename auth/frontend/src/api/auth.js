@@ -27,6 +27,5 @@ export const googleCallback = (code) => {
   return api.get(`/auth/google/callback?code=${code}`);
 };
 
-export const getCurrentUser = () => api.get("/auth/me");
 export const getAccountMappingStatus = () =>
   api.get("/auth/check-account-mapping");

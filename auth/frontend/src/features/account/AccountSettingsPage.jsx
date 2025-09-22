@@ -1,7 +1,7 @@
 // src/features/account/AccountSettingsPage.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getCurrentUser, getAccountMappingStatus } from "../../api/auth";
+import { getUserInfo, getAccountMappingStatus } from "../../api/auth";
 import PasswordChangeSection from "./components/PasswordChangeSection";
 import {
   Container,
@@ -21,7 +21,7 @@ const AccountSettingsPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    getCurrentUser()
+    getUserInfo()
       .then((res) => {
         if (!res.data) throw new Error("유저 정보 없음");
         setUserData(res.data);
