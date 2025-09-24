@@ -13,13 +13,18 @@ const cors = require("cors");
 
 const isProd = process.env.NODE_ENV === "production";
 
+const allowedOrigins = isProd
+  ? ["https://rbmtl.com", "https://www.rbmtl.com"]
+  : ["http://localhost:3000"];
+
 app.use(
   cors({
-    origin: isProd ? "https://rbmate.com" : "http://localhost:3000",
+    origin: allowedOrigins,
     methods: "GET,POST",
-    credentials: true, // 쿠키를 허용할 경우
+    credentials: true,
   })
 );
+
 
 app.use(cookieParser());
 

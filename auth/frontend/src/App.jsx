@@ -48,7 +48,7 @@ const App = () => {
 
   return (
     <ThemeProvider theme={theme}>
-      <Router>
+      <Router basename="/auth">
         <Routes>
           <Route
             path="/"
