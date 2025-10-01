@@ -49,7 +49,7 @@ exports.accountMapping = async ({ googleId, email, name }) => {
           );
           return {
             message: "이 로컬 계정은 이미 다른 구글 계정과 연결되어 있습니다.",
-            redirectUrl: `${process.env.FRONTEND_REDIRECT_URI}/auth/home`,
+            redirectUrl: `${process.env.FRONTEND_REDIRECT_URI}/home`,
           };
         }
 
@@ -75,7 +75,7 @@ exports.accountMapping = async ({ googleId, email, name }) => {
           return {
             message:
               "비밀번호 초기화 이메일 전송에 실패했습니다. 다시 시도해 주세요.",
-            redirectUrl: `${process.env.FRONTEND_REDIRECT_URI}/auth/home`,
+            redirectUrl: `${process.env.FRONTEND_REDIRECT_URI}/home`,
           };
         }
 
@@ -83,7 +83,7 @@ exports.accountMapping = async ({ googleId, email, name }) => {
           message: "구글 계정과 기존 로컬 계정이 성공적으로 매핑되었습니다.",
           user: googleUser,
           localUser: existingLocalUser,
-          redirectUrl: `${process.env.FRONTEND_REDIRECT_URI}/auth/home`, // 이미 매핑된 경우 홈으로 리디렉션
+          redirectUrl: `${process.env.FRONTEND_REDIRECT_URI}/home`, // 이미 매핑된 경우 홈으로 리디렉션
         };
       }
 
@@ -128,7 +128,7 @@ exports.accountMapping = async ({ googleId, email, name }) => {
         message: "구글 계정과 로컬 계정이 성공적으로 매핑되었습니다.",
         user: googleUser,
         localUser,
-        redirectUrl: `${process.env.FRONTEND_REDIRECT_URI}/auth/home`, // 매핑 완료 페이지로 리디렉션
+        redirectUrl: `${process.env.FRONTEND_REDIRECT_URI}/home`, // 매핑 완료 페이지로 리디렉션
       };
     }
 
@@ -139,7 +139,7 @@ exports.accountMapping = async ({ googleId, email, name }) => {
       message: "구글 계정과 로컬 계정이 이미 매핑되어 있습니다.",
       user: googleUser,
       localUser,
-      redirectUrl: `${process.env.FRONTEND_REDIRECT_URI}/auth/home`,
+      redirectUrl: `${process.env.FRONTEND_REDIRECT_URI}/home`,
     };
   } catch (error) {
     console.error("구글 계정과 로컬 계정 매핑 중 오류:", error);
@@ -204,37 +204,7 @@ exports.checkAccountMapping = async (req, res) => {
   }
 };
 
-// 로컬 계정 비밀번호 설정 (provider 변경 없이 비밀번호만 설정)
-// exports.setLocalPassword = async (req, res) => {
-//   try {
-//     const { password } = req.body;
-//     const userId = req.user._id; // 이미 로그인된 사용자 정보
 
-//     // 비밀번호 해싱
-//     const hashedPassword = await bcrypt.hash(password, 12);
-
-//     // 로컬 사용자 조회
-//     const localUser = await User.findById(userId);
-
-//     if (!localUser) {
-//       return res
-//         .status(404)
-//         .json({ success: false, message: "사용자를 찾을 수 없습니다." });
-//     }
-
-//     // 비밀번호 설정
-//     localUser.password = hashedPassword;
-//     await localUser.save();
-
-//     return res.status(200).json({
-//       success: true,
-//       message: "비밀번호가 성공적으로 설정되었습니다.",
-//     });
-//   } catch (error) {
-//     console.error("비밀번호 설정 중 오류 발생:", error);
-//     return res.status(500).json({ success: false, message: "서버 오류" });
-//   }
-// };
 
 exports.setLocalPassword = async (req, res) => {
   try {

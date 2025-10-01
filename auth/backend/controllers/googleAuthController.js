@@ -112,14 +112,7 @@ exports.googleCallback = async (req, res) => {
 
     res.cookie("token", token, cookieOptions);
 
-    // 로그인 성공 후 리디렉션(개발 단계의 별개 서버에서 동일한 도메인인 배포 단계로 넘어온 관계로 코드 수정 불가피)
-const frontendBaseUrl =
-  process.env.FRONTEND_REDIRECT_URI;
-
-// const redirectUrl = `${frontendBaseUrl}/auth/google/callback`;
-
-// 리다이렉트 시 쿼리 파라미터로 code, state 같이 넘기기
-return res.redirect(`${frontendBaseUrl}/auth/home`);
+     return res.redirect(process.env.FRONTEND_REDIRECT_URI);
   } catch (error) {
     console.error("Google Callback Error:", error);
     res.status(500).json({ success: false, message: "Google 로그인 실패" });
