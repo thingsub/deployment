@@ -29,7 +29,7 @@ exports.googleAuth = async (req, res) => {
     });
 
     // 프론트로 URL을 JSON으로 보내지 않고 바로 리디렉션
-    res.redirect(redirectUri);
+    return res.redirect(redirectUri);
   } catch (error) {
     console.error("Google Auth Redirect Error:", error);
     res
@@ -110,9 +110,13 @@ exports.googleCallback = async (req, res) => {
       { expiresIn: "1h" }
     );
 
-    res.cookie("token", token, cookieOptions);
+	const mappingResult = await accountMapping({ googleId, email, name });
+	// JWT 발급 후 쿠키 설정
+	res.cookie("token", token, cookieOptions);
+	// 여기서 JSON 응답 하지 말고 무조건 redirect
+	return res.redirect(mappingResult.redirectUrl || process.env.FRONTEND_REDIRECT_URI);
 
-     return res.redirect(process.env.FRONTEND_REDIRECT_URI);
+
   } catch (error) {
     console.error("Google Callback Error:", error);
     res.status(500).json({ success: false, message: "Google 로그인 실패" });

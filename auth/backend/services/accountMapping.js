@@ -49,7 +49,7 @@ exports.accountMapping = async ({ googleId, email, name }) => {
           );
           return {
             message: "이 로컬 계정은 이미 다른 구글 계정과 연결되어 있습니다.",
-            redirectUrl: `${process.env.FRONTEND_REDIRECT_URI}/home`,
+            redirectUrl: process.env.FRONTEND_REDIRECT_URI,
           };
         }
 
@@ -75,7 +75,7 @@ exports.accountMapping = async ({ googleId, email, name }) => {
           return {
             message:
               "비밀번호 초기화 이메일 전송에 실패했습니다. 다시 시도해 주세요.",
-            redirectUrl: `${process.env.FRONTEND_REDIRECT_URI}/home`,
+            redirectUrl: process.env.FRONTEND_REDIRECT_URI,
           };
         }
 
@@ -83,7 +83,7 @@ exports.accountMapping = async ({ googleId, email, name }) => {
           message: "구글 계정과 기존 로컬 계정이 성공적으로 매핑되었습니다.",
           user: googleUser,
           localUser: existingLocalUser,
-          redirectUrl: `${process.env.FRONTEND_REDIRECT_URI}/home`, // 이미 매핑된 경우 홈으로 리디렉션
+          redirectUrl: process.env.FRONTEND_REDIRECT_URI, // 이미 매핑된 경우 홈으로 리디렉션
         };
       }
 
@@ -128,7 +128,7 @@ exports.accountMapping = async ({ googleId, email, name }) => {
         message: "구글 계정과 로컬 계정이 성공적으로 매핑되었습니다.",
         user: googleUser,
         localUser,
-        redirectUrl: `${process.env.FRONTEND_REDIRECT_URI}/home`, // 매핑 완료 페이지로 리디렉션
+        redirectUrl: process.env.FRONTEND_REDIRECT_URI, // 매핑 완료 페이지로 리디렉션
       };
     }
 
@@ -139,7 +139,7 @@ exports.accountMapping = async ({ googleId, email, name }) => {
       message: "구글 계정과 로컬 계정이 이미 매핑되어 있습니다.",
       user: googleUser,
       localUser,
-      redirectUrl: `${process.env.FRONTEND_REDIRECT_URI}/home`,
+      redirectUrl: process.env.FRONTEND_REDIRECT_URI,
     };
   } catch (error) {
     console.error("구글 계정과 로컬 계정 매핑 중 오류:", error);

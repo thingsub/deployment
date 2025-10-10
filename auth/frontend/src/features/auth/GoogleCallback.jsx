@@ -16,7 +16,18 @@ const GoogleCallback = () => {
         return;
       }
 
-    window.location.href = `${process.env.REACT_APP_API_BASE_URL}/auth/google/callback?code=${code}`;
+    // 백엔드로 인증 코드 보내기
+    googleCallback(code)
+      .then(() => {
+        // 백엔드에서 리다이렉트되었으므로, 자동으로 프론트엔드 페이지로 이동
+        // 예: /auth/home
+        navigate("/auth/home");
+      })
+      .catch((error) => {
+        console.error("로그인 실패:", error);
+        navigate("/login");
+      });
+
   }, [navigate, searchParams]);
 
   return (

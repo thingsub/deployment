@@ -23,7 +23,6 @@ export const logoutUser = () => api.get("/auth/logout");
 export const setLocalPassword = (password) =>
   api.post("/auth/set-local-password", { password });
 
-// 구글 콜백 처리 (code 보내기) + 과연 api를 붙여서 해결될것인가
 export const googleCallback = (code) => {
   return api.get(`/auth/google/callback?code=${code}`);
 };
