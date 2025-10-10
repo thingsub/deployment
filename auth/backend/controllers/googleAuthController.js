@@ -9,7 +9,7 @@ const { cookieOptions } = require("../utils/cookies");
 const { sendPasswordResetEmail } = require("../utils/email");
 
 const { accountMapping } = require("../services/accountMapping");
-
+//const { accountMapping } = require("../services/accountMappingService");
 const client = new OAuth2Client(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET,
@@ -110,7 +110,6 @@ exports.googleCallback = async (req, res) => {
       { expiresIn: "1h" }
     );
 
-	const mappingResult = await accountMapping({ googleId, email, name });
 	// JWT 발급 후 쿠키 설정
 	res.cookie("token", token, cookieOptions);
 	// 여기서 JSON 응답 하지 말고 무조건 redirect

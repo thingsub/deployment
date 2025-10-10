@@ -21,7 +21,7 @@ const GoogleCallback = () => {
       .then(() => {
         // 백엔드에서 리다이렉트되었으므로, 자동으로 프론트엔드 페이지로 이동
         // 예: /auth/home
-        navigate("/auth/home");
+        navigate("/home");
       })
       .catch((error) => {
         console.error("로그인 실패:", error);

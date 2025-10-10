@@ -6,6 +6,8 @@ const authMiddleware = require("../middlewares/authMiddleware");
 const googleAuthController = require("../controllers/googleAuthController");
 const accountMapping = require("../services/accountMapping");
 
+//const accountMappingController = require("../controllers/accountMappingController");
+
 // [POST] 로그인
 router.post("/login", authController.login);
 
@@ -30,24 +32,18 @@ router.get("/me", authMiddleware, authController.getUserInfo);
 router.get("/logout", authMiddleware, authController.logout);
 
 // [GET] 구글 계정과 로컬 계정 매핑 상태 확인
-router.get(
-  "/check-account-mapping",
-  authMiddleware,
-  accountMapping.checkAccountMapping
-);
+router.get("/check-account-mapping", authMiddleware, accountMapping.checkAccountMapping);
 
 // [POST] 로컬 계정 비밀번호 설정
-router.post(
-  "/set-local-password",
-  authMiddleware,
-  accountMapping.setLocalPassword
-);
+router.post("/set-local-password", authMiddleware, accountMapping.setLocalPassword);
+
+// 코드에 accountMappingController 소속 함수들은 본래 accountMapping이었던 걸로
 
 // [POST] 구글 계정과 로컬 계정 매핑
-router.post(
-  "/account-mapping",
-  authMiddleware,
-  accountMapping.accountMappingHandler
-);
+router.post("/account-mapping", authMiddleware, accountMapping.accountMappingHandler);
+
+//실험용
+//router.get("/google/callback", googleAuthController.googleCallback);
+//router.post("/account-mapping", authMiddleware, accountMappingController.accountMappingHandler);
 
 module.exports = router;
