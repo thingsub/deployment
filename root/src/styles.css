@@ -1,0 +1,169 @@
+/* 전체 스타일 기본값 */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  overflow-x: hidden; /* 가로 스크롤 방지 */
+  background-color: rgb(0, 0, 0);
+}
+
+/* 📌 네비게이션 바 (기본: 가로 정렬) */
+.Nav_bar {
+  display: flex;
+  justify-content: space-around;
+  background-color: #333;
+  padding: 5px;
+   align-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  transition: transform 0.3s ease-in-out, opacity 0.6s ease-in-out;
+  z-index: 999; /* 다른 요소보다 위에 표시 */
+}
+
+.Nav_bar a {
+  color: white;
+  text-decoration: none;
+  padding: 5px 20px;
+}
+
+/* 📌 네비게이션 바 숨김 효과 */
+.Nav_bar.hidden {
+  transform: translateY(-100%); /* 위로 이동해 숨김 */
+  opacity: 0;
+}
+
+.Nav_bar.visible {
+  transform: translateY(0); /* 다시 나타남 */
+  opacity: 1;
+}
+
+/* 📌 네비게이션 바 (작은 화면에서 세로 정렬) */
+@media screen and (max-width: 768px) {
+  .Nav_bar {
+    flex-direction: column;
+    align-items: center;
+  }
+
+    .nav-links {
+    width: 100%;         /* 전체 너비 */
+    display: flex;       /* flex 박스로 변경 */
+    flex-direction: column; /* 세로 정렬 */
+    align-items: center; /* 아이템 중앙 정렬 */
+  }
+
+
+  .Nav_bar a {
+    padding: 10px;
+    display: block;
+    width: 100%;
+    text-align: center;
+  }
+}
+
+.logo-image {
+  width: 500px; /* 기존 크기의 절반 */
+  height: auto;
+}
+
+/* 모바일에서 로고 아쉬운거 개선 목적  */
+@media screen and (max-width: 768px) {
+  .logo-image {
+    width: 300px; /* 적절한 크기로 줄이기 */
+  }
+}
+
+
+/* 📌 박스 레이아웃 */
+.Box,
+.Box1 {
+  text-align: center;
+  padding: 20px;
+}
+
+
+
+
+.custom-title {
+  position: relative;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #fff;
+  margin-top: 20px;  /* 위 공간 추가 */
+  margin-bottom: 0;  /* 필요하면 아래 마진 조절 */
+  animation: fadeInUp 0.7s ease forwards;
+}
+
+
+/* 📌 관심사(이미지) 그리드 (기본 2x2) */
+.custom-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #fff;
+  margin-top: 40px; /* 상단 여백 충분히 */
+  margin-bottom: 40px;
+  animation: fadeInUp 0.7s ease forwards;
+  line-height: 1.5;
+}
+
+
+
+
+.login-container {
+  text-align: center;
+
+  margin-top: 100px;
+}
+
+
+button:hover {
+  background-color: #45a049;
+}
+
+
+/* 홈 페이지 컨테이너 */
+.home-container {
+  position: relative;
+  width: 100%;
+  height: 100vh; /* 화면 전체 높이를 차지하도록 설정 */
+  overflow: hidden; /* 비디오가 컨테이너 밖으로 나가지 않도록 */
+}
+
+.background-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* 꽉 차게, 비율 유지하면서 */
+  z-index: -1;
+}
+
+@media screen and (max-width: 768px) {
+  .background-video {
+    object-fit: contain; /* 작은 화면에서는 잘리는 것보다 전체 보이게 */
+    background-color: black; /* 검정 배경 유지 */
+  }
+}
+
+
+
+html {
+  scroll-behavior: smooth;
+  height: 100%; /* html 높이 설정 */
+  overflow-y: auto; /* 세로 스크롤 허용 */
+}
+
+/* 각 섹션의 기본 display 및 스크롤 설정 */
+#home,
+#about-section,
+#blockcomposer,
+#contact {
+  display: block; /* 기본적으로 보이도록 설정 */
+  padding: 20px;
+  overflow: auto; /* 스크롤이 가능하도록 설정 */
+  min-height: 100vh; /* 최소 높이를 100vh로 설정 */
+}
+

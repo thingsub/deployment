@@ -1,0 +1,107 @@
+.customTitle {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #fff;
+  margin-top: 40px;
+  margin-bottom: 40px;
+  animation: fadeInUp 0.7s ease forwards;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.contentRow {
+  display: flex;
+  justify-content: center;
+  
+  align-items: flex-start;
+  gap: 50px;
+  padding: 0 20px;
+  flex-wrap: wrap;
+  margin-top: 200px;
+}
+
+.imageColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 30px; /* 이미지들 간 간격 */
+  align-items: center;
+}
+
+.favor {
+  flex: 1 1 300px;
+  max-width: 400px;
+  transition: opacity 0.5s ease, transform 0.5s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+  margin-bottom: -60px; /* 기존 값이 더 크다면 이걸로 줄이기 */
+}
+
+.favorImg {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  opacity: 0;
+  transform: translateY(20px) scale(0.8);
+  transition: opacity 0.5s ease, transform 0.5s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+.favorAnimateIn {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+.cover {
+  margin-top: 8px;
+  color: white;
+  font-weight: 600;
+  text-align: center;
+}
+
+.blockComposer {
+  flex: 2 1 400px;
+  color: white;
+  max-width: 600px;
+  margin-top: 40px;
+}
+
+.blockComposerH3 {
+  font-size: 1.5rem;
+  margin-bottom: 15px;
+  font-weight: 700;
+}
+
+.blockComposerP {
+  font-size: 1rem;
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+.blockComposerOl {
+  padding-left: 20px;
+  list-style-position: inside;
+}
+
+.blockComposerLi {
+  margin-bottom: 10px;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+@media screen and (max-width: 768px) {
+  .contentRow {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .favor,
+  .blockComposer {
+    max-width: 100%;
+    flex: none;
+  }
+
+  .blockComposer {
+    margin-top: 30px;
+  }
+}
