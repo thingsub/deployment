@@ -1,7 +1,7 @@
 // src/Components/Login.js
 
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import GoogleLoginButton from "./components/GoogleLoginButton";
 import {
   Container,
@@ -139,7 +139,7 @@ const Login = () => {
           {!passwordExists && (
             <ErrorMessage>
               이 계정은 비밀번호가 설정되어 있지 않습니다.{" "}
-              <a href="/account-settings">비밀번호 설정</a>을 먼저 진행해주세요.
+              <Link to="/account-settings">비밀번호 설정</Link>을 먼저 진행해주세요.
             </ErrorMessage>
           )}
 

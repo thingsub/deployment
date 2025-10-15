@@ -1,5 +1,6 @@
 // src/features/account/AccountSettingsPage.jsx
-import React, { useState, useEffect } from "react";
+
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { getUserInfo, getAccountMappingStatus } from "../../api/auth";
 import PasswordChangeSection from "./components/PasswordChangeSection";
@@ -20,27 +21,46 @@ const AccountSettingsPage = () => {
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    getUserInfo()
-      .then((res) => {
-        if (!res.data) throw new Error("유저 정보 없음");
-        setUserData(res.data);
-        return getAccountMappingStatus();
-      })
-      .then((res) => {
-        if (res?.data?.success) {
-          setMappingStatus(res.data.mappingStatus);
-          setLocalUser(res.data.localUser);
+  // fetchUserData를 useCallback으로 감싸기
+  const fetchUserData = useCallback(async () => {
+    try {
+      const userRes = await getUserInfo();
+      if (!userRes.data) throw new Error("유저 정보 없음");
+
+      setUserData(userRes.data);
+
+      const mappingRes = await getAccountMappingStatus();
+      if (mappingRes?.data?.success) {
+        const mapping = mappingRes.data;
+        setMappingStatus(mapping.mappingStatus);
+        setLocalUser(mapping.localUser);
+
+        // 비밀번호 없으면 폼 보이기, 있으면 안 보이기
+        if (
+          mapping.mappingStatus === "local_account" &&
+          (!mapping.localUser || !mapping.localUser.password || mapping.localUser.password === "")
+        ) {
+          setShowPasswordForm(true);
+        } else {
+          setShowPasswordForm(false);
         }
-      })
-      .catch((err) => {
-        console.error("유저 정보 또는 매핑 상태 불러오기 실패:", err);
-        navigate("/login");
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
+      }
+    } catch (err) {
+      console.error("유저 정보 또는 매핑 상태 불러오기 실패:", err);
+      navigate("/login");
+    } finally {
+      setIsLoading(false);
+    }
   }, [navigate]);
+
+  useEffect(() => {
+    fetchUserData();
+  }, [fetchUserData]);
+
+  const handlePasswordSetSuccess = async () => {
+    await fetchUserData(); // 최신 상태로 다시 불러오기
+    setShowPasswordForm(false); // 폼 닫기
+  };
 
   if (isLoading) return <p>사용자 정보를 불러오는 중...</p>;
   if (!userData) return null;
@@ -51,7 +71,9 @@ const AccountSettingsPage = () => {
     mappingStatus === "local_account" ? localUser : userData;
 
   const canChangePassword =
-    mappingStatus === "local_account" && !passwordTargetUser?.password;
+    provider === "google" &&
+    mappingStatus === "local_account" &&
+    (!passwordTargetUser?.password || passwordTargetUser.password === "");
 
   return (
     <Container>
@@ -73,7 +95,7 @@ const AccountSettingsPage = () => {
             : provider}
         </InfoText>
 
-        {provider === "google" && canChangePassword && (
+        {canChangePassword && (
           <>
             <PasswordMessage>
               구글 계정과 연동된 로컬 계정에 비밀번호가 설정되어 있지 않습니다.{" "}
@@ -86,7 +108,7 @@ const AccountSettingsPage = () => {
             ) : (
               <PasswordChangeSection
                 user={passwordTargetUser}
-                onSuccess={() => setShowPasswordForm(false)}
+                onSuccess={handlePasswordSetSuccess}
               />
             )}
           </>
@@ -94,7 +116,8 @@ const AccountSettingsPage = () => {
 
         {(provider === "local" ||
           (mappingStatus === "local_account" &&
-            passwordTargetUser?.password)) && (
+            passwordTargetUser?.password &&
+            passwordTargetUser.password !== "")) && (
           <PasswordChangeSection user={passwordTargetUser} />
         )}
       </div>

@@ -1,14 +1,15 @@
 // src/features/home/Home.jsx
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getUserInfo, checkAccountMapping, logoutUser } from "../../api/auth";
+//import { getUserInfo, checkAccountMapping, logoutUser } from "../../api/auth";
+import { getUserInfo, checkAccountMapping} from "../../api/auth";
 
 import {
   Container,
   Title,
   WelcomeText,
-  Button,
-  LogoutButton,
+  Button
+//  ,LogoutButton,
 } from "../../styles/homePageStyles"; // 스타일 import
 
 const Home = () => {
@@ -46,76 +47,87 @@ const Home = () => {
       });
   }, [navigate]);
 
-  const handleLogout = () => {
-    logoutUser()
-      .then(() => {
-        setUserInfo(null);
-        setMappingStatus(null);
-        setLocalUserInfo(null);
-        navigate("/login");
-      })
-      .catch((err) => {
-        console.error("로그아웃 실패:", err);
-        navigate("/login");
-      });
-  };
+//  const handleLogout = () => {
+//    logoutUser()
+//      .then(() => {
+//        setUserInfo(null);
+//        setMappingStatus(null);
+//        setLocalUserInfo(null);
+//        navigate("/login");
+//      })
+//      .catch((err) => {
+//        console.error("로그아웃 실패:", err);
+//        navigate("/login");
+//      });
+//  };
 
   if (loading || mappingStatus === null) return <p>로딩 중...</p>;
   if (!userInfo) return null;
 
   return (
-    <Container>
-      <Title>홈 화면</Title>
 
-      <div>
-        <WelcomeText>환영합니다, {userInfo.name || userInfo.id}님!</WelcomeText>
-        <p>
-          로그인 방식: {userInfo.provider === "google" ? "Google" : "Local"}
-        </p>
+  <Container>
+    <Title>Profile</Title>
 
-        {/* 구글 로그인 상태 */}
-        {userInfo.provider === "google" && (
-          <>
-            {(mappingStatus === "not_mapped" ||
-              (mappingStatus === "local_account" &&
-                (!localUserInfo || !localUserInfo.password))) && (
-              <div>
-                <p>
-                  구글 계정으로 로그인하셨지만, 로컬 계정이 매핑되지 않았습니다.
-                </p>
-                <Button onClick={() => navigate("/account-settings")}>
-                  비밀번호 설정하기
-                </Button>
-              </div>
-            )}
+    <div>
+      <WelcomeText>환영합니다, {userInfo.name || userInfo.id}님!</WelcomeText>
+      <p>
+        로그인 방식: {userInfo.provider === "google" ? "Google" : "Local"}
+      </p>
 
-            {(mappingStatus === "mapped" ||
-              (mappingStatus === "local_account" &&
-                localUserInfo?.password)) && (
-              <div>
-                <p>구글 계정과 로컬 계정이 매핑되었습니다.</p>
-                <Button onClick={() => navigate("/account-settings")}>
-                  계정 설정
-                </Button>
-              </div>
-            )}
-          </>
-        )}
+      {/* 구글 로그인 상태 */}
+      {userInfo.provider === "google" && (
+        <>
 
-        {/* 로컬 계정 로그인 */}
-        {userInfo.provider === "local" && mappingStatus === "local_account" && (
-          <div>
-            <p>로컬 계정으로 로그인되었습니다.</p>
-            <Button onClick={() => navigate("/account-settings")}>
-              계정 설정
-            </Button>
-          </div>
-        )}
+          {(mappingStatus === "not_mapped" ||
+            (mappingStatus === "local_account" &&
+              (!localUserInfo || !localUserInfo.password))) && (
+            <div>
+              <p>
+                구글 계정으로 로그인하셨지만, 로컬 계정이 매핑되지 않았습니다.
+              </p>
 
-        <LogoutButton onClick={handleLogout}>로그아웃</LogoutButton>
+              <Button onClick={() => navigate("/account-settings")}>
+                비밀번호 설정하기
+              </Button>
+            </div>
+          )}
+
+          {(mappingStatus === "mapped" ||
+            (mappingStatus === "local_account" && localUserInfo?.password)) && (
+            <div>
+              <p>구글 계정과 로컬 계정이 매핑되었습니다.</p>
+              <Button onClick={() => navigate("/account-settings")}>
+                계정 설정
+              </Button>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* 로컬 계정 로그인 */}
+      {userInfo.provider === "local" && mappingStatus === "local_account" && (
+        <div>
+          <p>로컬 계정으로 로그인되었습니다.</p>
+          <Button onClick={() => navigate("/account-settings")}>
+            계정 설정
+          </Button>
+        </div>
+      )}
+
+      {/* 버튼들을 감싸는 flex 박스 */}
+      <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
+        <Button onClick={() => (window.location.href = "/")}>
+          메인화면으로
+        </Button>
+        {/*<LogoutButton onClick={handleLogout}>로그아웃</LogoutButton>*/}
       </div>
-    </Container>
-  );
+    </div>
+  </Container>
+);
+
+
+
 };
 
 export default Home;

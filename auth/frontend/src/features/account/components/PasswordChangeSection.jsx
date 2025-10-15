@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import { setLocalPassword } from "../../../api/auth";
-
 import { Button, Input, Label } from "../../../styles/commonStyles"; // 공통 스타일 import
 import {
   Container,
@@ -38,8 +37,13 @@ const PasswordChangeSection = ({ user, onSuccess }) => {
       setMessage(res.data.message || "비밀번호가 성공적으로 변경되었습니다.");
       setPassword("");
       setPasswordConfirm("");
-      if (onSuccess) onSuccess();
-    } catch (err) {
+
+      setTimeout(() => { 
+if (onSuccess) onSuccess();
+},5000);
+	
+}
+catch (err) {
       console.error("Password change error", err);
       setMessage("비밀번호 변경 실패");
     } finally {
