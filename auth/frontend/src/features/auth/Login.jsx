@@ -14,13 +14,13 @@ import {
 } from "../../styles/loginStyles"; // 스타일 import
 
 import {
-  getUserInfo,
+//  getUserInfo,          //   (테스트 : App.jsx에 있어서 여기 지워봄 251015)
   checkPasswordExists,
   login,
   accountMapping,
 } from "../../api/auth";
 
-const Login = () => {
+const Login = ({ setIsAuthenticated }) => {
   const [id, setId] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
@@ -28,15 +28,15 @@ const Login = () => {
   const [passwordExists, setPasswordExists] = useState(true); // 비밀번호 설정 여부
   const navigate = useNavigate();
 
-  useEffect(() => {
-    getUserInfo()
-      .then((res) => {
-        if (res.status === 200) navigate("/home");
-      })
-      .catch(() => {
-        console.log("로그인되지 않은 상태입니다.");
-      });
-  }, [navigate]);
+  //useEffect(() => {
+  //  getUserInfo()
+  //    .then((res) => {
+  //      if (res.status === 200) navigate("/home");
+  //    })
+  //    .catch(() => {
+  //      console.log("로그인되지 않은 상태입니다.");
+  //    });
+  //}, [navigate]);
 
   // id가 변경될 때마다 비밀번호 존재 여부 확인
   useEffect(() => {
@@ -67,6 +67,7 @@ const Login = () => {
       const response = await login(id, password);
 
       if (response.status === 200) {
+setIsAuthenticated(true);  // 인증 상태 갱신
         navigate("/home");
       }
     } catch (error) {
@@ -92,6 +93,7 @@ const Login = () => {
       const response = await accountMapping(googleId, email, name);
 
       if (response.status === 200) {
+setIsAuthenticated(true);  // 인증 상태 갱신
         navigate("/home");
       }
     } catch (error) {

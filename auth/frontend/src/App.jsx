@@ -60,7 +60,7 @@ const App = () => {
               )
             }
           />
-          <Route path="/login" element={<Login />} />
+          <Route path="/login" element={<Login setIsAuthenticated={setIsAuthenticated} />} />
           {/* <Route path="/register" element={<Register />} /> */}
           <Route path="/google/callback" element={<GoogleCallback />} />
           <Route
