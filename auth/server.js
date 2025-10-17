@@ -8,7 +8,6 @@ const path = require("path"); // path 모듈 추가
 const http = require("http"); // HTTP 서버 모듈 추가
 const server = http.createServer(app); // HTTP 서버 생성
 const cookieParser = require("cookie-parser");
-
 const cors = require("cors");
 
 const isProd = process.env.NODE_ENV === "production";
@@ -27,6 +26,8 @@ app.use(
 
 
 app.use(cookieParser());
+
+
 
 // 미들웨어 설정
 app.use(bodyParser.json());

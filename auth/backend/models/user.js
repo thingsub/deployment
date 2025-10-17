@@ -7,6 +7,13 @@ const userSchema = new mongoose.Schema(
     password: { type: String }, // 로컬 로그인용 비밀번호 (필수)   // required: true  잠시 삭제
     email: { type: String, unique: true, required: true },
     name: { type: String, required: true, default: "Anonymous" },
+    currentSessions: [
+      {
+        sessionId: { type: String, required: true },
+        createdAt: { type: Date, default: Date.now },
+        expiresAt: { type: Date, required: true },
+      },
+    ],
   },
   { timestamps: true }
 );

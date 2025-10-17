@@ -6,6 +6,13 @@ const googleUserSchema = new mongoose.Schema(
     googleId: { type: String, unique: true, required: true }, // 구글 고유 ID
     email: { type: String, required: true, index: true }, // unique: true를 껴버리면 매핑 이슈로 구글 로그인까지 막혀버림
     name: { type: String, required: true, default: "Anonymous" },
+    currentSessions: [
+      {
+        sessionId: { type: String, required: true },
+        createdAt: { type: Date, default: Date.now },
+        expiresAt: { type: Date, required: true },
+      },
+    ],
   },
   { timestamps: true }
 );

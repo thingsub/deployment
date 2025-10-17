@@ -70,7 +70,7 @@ const Home = () => {
     <Title>Profile</Title>
 
     <div>
-      <WelcomeText>환영합니다, {userInfo.name || userInfo.id}님!</WelcomeText>
+      <WelcomeText>환영해요, {userInfo.name || userInfo.id}님!</WelcomeText>
       <p>
         로그인 방식: {userInfo.provider === "google" ? "Google" : "Local"}
       </p>
@@ -84,7 +84,7 @@ const Home = () => {
               (!localUserInfo || !localUserInfo.password))) && (
             <div>
               <p>
-                구글 계정으로 로그인하셨지만, 로컬 계정이 매핑되지 않았습니다.
+                구글 계정으로 로그인하셨지만, 로컬 계정이 아직 연결되지 않았습니다.
               </p>
 
               <Button onClick={() => navigate("/account-settings")}>
@@ -96,7 +96,7 @@ const Home = () => {
           {(mappingStatus === "mapped" ||
             (mappingStatus === "local_account" && localUserInfo?.password)) && (
             <div>
-              <p>구글 계정과 로컬 계정이 매핑되었습니다.</p>
+              <p>구글 계정과 로컬 계정이 연결되었습니다.</p>
               <Button onClick={() => navigate("/account-settings")}>
                 계정 설정
               </Button>

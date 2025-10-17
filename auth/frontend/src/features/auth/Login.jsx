@@ -20,7 +20,7 @@ import {
   accountMapping,
 } from "../../api/auth";
 
-const Login = ({ setIsAuthenticated }) => {
+const Login = ({ isAuthenticated, setIsAuthenticated }) => {
   const [id, setId] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
@@ -37,6 +37,17 @@ const Login = ({ setIsAuthenticated }) => {
   //      console.log("로그인되지 않은 상태입니다.");
   //    });
   //}, [navigate]);
+
+
+  // ⭐ 수정 : 로그인 상태 확인 및 리디렉션 로직
+  useEffect(() => {
+    // isAuthenticated가 true이면 (즉, 유효한 토큰이 있다면)
+    if (isAuthenticated) {
+      navigate("/home", { replace: true }); // 히스토리 스택을 대체하면서 홈으로 이동
+    }
+  }, [isAuthenticated, navigate]); 
+  
+
 
   // id가 변경될 때마다 비밀번호 존재 여부 확인
   useEffect(() => {

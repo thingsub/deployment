@@ -6,6 +6,7 @@ const GoogleUser = require("../models/googleUser");
 const UserMapping = require("../models/userMapping");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
 
 exports.root = async (req, res) => res.redirect("/login");
 
@@ -63,6 +64,7 @@ exports.register = async (req, res) => {
   }
 };
 
+
 exports.login = async (req, res) => {
   try {
     const { id, password } = req.body;
@@ -90,12 +92,33 @@ exports.login = async (req, res) => {
         .json({ success: false, message: "비밀번호가 잘못되었습니다." });
     }
 
-    const token = jwt.sign(
-      { userId: user._id.toString(), userType: "local" },
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" }
-    );
+// ⭐ [세션 로직] 1. 세션 ID 및 만료 시간 준비
+    const sessionId = crypto.randomBytes(16).toString("hex"); // 고유 세션 ID 생성
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1시간 뒤 만료 (cookieOptions.maxAge와 일치)
 
+    // ⭐ [세션 로직] 2. JWT 생성 (sessionId를 페이로드에 포함)
+    const token = jwt.sign(
+      { 
+        userId: user._id.toString(), 
+        userType: "local",
+	loginMethod : "local",
+        sessionId: sessionId, // DB 세션과 JWT를 연결
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    // ⭐ [세션 로직] 3. DB 세션 업데이트 (기존 세션 제거, 새 세션 추가)
+    // 단일 세션 제한을 위해 기존 세션 배열을 비우고 현재 세션만 유지
+    user.currentSessions = []; 
+    user.currentSessions.push({ 
+      sessionId, 
+      expiresAt,
+      createdAt: new Date(), 
+    });
+    await user.save();
+
+    // 쿠키에 토큰 저장
     res.cookie("token", token, cookieOptions);
 
     return res.status(200).json({ success: true, userId: user.id });
@@ -106,6 +129,7 @@ exports.login = async (req, res) => {
       .json({ success: false, message: "서버 오류가 발생했습니다." });
   }
 };
+
 
 // ID 중복 체크(로컬 id만)
 exports.checkIdAvailability = async (req, res) => {
@@ -125,6 +149,7 @@ exports.checkIdAvailability = async (req, res) => {
       .json({ success: false, message: "서버 오류가 발생했습니다." });
   }
 };
+
 
 exports.checkHome = async (req, res) => {
   try {
@@ -188,22 +213,37 @@ exports.getUserInfo = async (req, res) => {
     }
 
     return res.status(200).json(responseData);
-  } catch (error) {
+    
+      } catch (error) {
     console.error("사용자 정보 가져오기 실패:", error);
     return res.status(500).json({ message: "사용자 정보 로딩 실패" });
   }
 };
 
-exports.logout = (req, res) => {
-  try {
-    // 쿠키에서 토큰 삭제 (로그아웃 처리)
-    res.clearCookie("token", { httpOnly: true, sameSite: "lax" });
+// 로그아웃 처리
+exports.logout = async (req, res) => {
+  try {
+    // 현재 로그인한 사용자 (req.user는 미들웨어에서 설정됨)
+    const user = req.user;
 
-    return res
-      .status(200)
-      .json({ success: true, message: "로그아웃 되었습니다." });
-  } catch (error) {
-    console.error("로그아웃 중 오류:", error);
-    return res.status(500).json({ success: false, message: "서버 오류" });
-  }
+ // req.user, req.sessionId는 authMiddleware를 통해 전달됨.
+    if (user && user.currentSessions && req.sessionId) {
+        // 현재 세션 ID와 일치하는 세션을 필터링하여 제거
+        user.currentSessions = user.currentSessions.filter(
+            session => session.sessionId !== req.sessionId
+        );
+        // 비동기로 DB 저장 시도 (오류가 발생해도 로그아웃 자체는 진행)
+        user.save().catch(err => console.error("세션 DB 삭제 실패:", err));
+    }
+
+    // ⭐ [쿠키 로직] 쿠키에서 토큰 삭제 (res.clearCookie 사용)
+    res.clearCookie("token", cookieOptions);
+
+    return res
+      .status(200)
+      .json({ success: true, message: "로그아웃 되었습니다." });
+  } catch (error) {
+    console.error("로그아웃 중 오류:", error);
+    return res.status(500).json({ success: false, message: "서버 오류" });
+  }
 };
