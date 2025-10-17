@@ -1,11 +1,10 @@
-// middleware/authMiddleware.js
-// 클라이언트가 home같은 인증 필수 페이지에 접근하고자 토큰 검증 요청 보냄.
-
 const mongoose = require("mongoose");
 require("dotenv").config();
 const User = require("../models/user");
-const GoogleUser = require("../models/googleUser");
-const UserMapping = require("../models/userMapping");
+// GoogleUser는 세션 검사에 필요 없으므로 제거합니다.
+// const GoogleUser = require("../models/googleUser"); 
+// UserMapping도 세션 검사에 필요 없으므로 제거합니다.
+// const UserMapping = require("../models/userMapping"); 
 const jwt = require("jsonwebtoken");
 
 module.exports = async function authMiddleware(req, res, next) {
@@ -14,99 +13,48 @@ module.exports = async function authMiddleware(req, res, next) {
     const token = req.cookies?.token;
 
     if (!token) {
-      console.log("[authMiddleware] 쿠키에 토큰이 없습니다.");
+      console.log("[authMiddleware] No token in cookies.");
       return res.status(401).json({ message: "인증 토큰이 없습니다." });
     }
 
     // 2. JWT 토큰 검증 및 디코딩
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log("[authMiddleware] 디코딩된 토큰 정보:", decoded);
+    // console.log("[authMiddleware] Decoded token info:", decoded); // 디버깅 시 필요
 
-    let user;
+    // **핵심 변경:** userType에 관계없이 로컬 User 모델에서 세션 유효성 검사
 
-    if (decoded.userType === "local") {
-      // 로컬 로그인인 경우 User 컬렉션에서 _id로 사용자 조회
-      user = await User.findById(decoded.userId);
-      if (!user)
+    // 토큰의 userId는 이제 항상 로컬 User의 _id를 가리켜야 합니다.
+    const user = await User.findById(decoded.userId); 
+    
+    if (!user) {
+        console.log(`[authMiddleware] Invalid User ID in token: ${decoded.userId}`);
         return res
-          .status(401)
-          .json({ message: "유효하지 않은 로컬 사용자입니다." });
+            .status(401)
+            .json({ message: "유효하지 않은 사용자 ID입니다." });
+    }
 
-      // 3. 세션 유효성 검사 (로컬 사용자)
-      const isValidSession = user.currentSessions?.some(
+    // 3. 세션 유효성 검사 (로컬/구글 통일)
+    // 현재 User 문서의 currentSessions에서 토큰의 sessionId와 일치하고 만료되지 않은 세션을 찾습니다.
+    const isValidSession = user.currentSessions?.some(
         (session) =>
           session.sessionId === decoded.sessionId && new Date(session.expiresAt) > new Date()
-      );
+    );
 
-      if (!isValidSession) {
-        console.log("[authMiddleware] 유효하지 않은 세션입니다. 중복 로그인?");
+    if (!isValidSession) {
+        console.log("[authMiddleware] Invalid or expired session. Session ID not found or expired.");
+        // JWT는 유효하지만, DB에서 해당 세션 ID가 삭제된 경우 (다른 곳에서 로그인됨)
         return res
           .status(401)
-          .json({ message: "유효하지 않거나 만료된 세션입니다." });
-      }
-    } 
+          .json({ message: "유효하지 않거나 만료된 세션입니다. (중복 로그인)" });
+    }
 
-
-
-else if (decoded.userType === "google") {
-      // 구글 로그인인 경우
-      console.log("[authMiddleware] decoded.userId:", decoded.userId);
-      console.log("[authMiddleware] decoded.userType:", decoded.userType);
-
-
-      // 1) GoogleUser 컬렉션에서 _id (decoded.userId)로 구글 사용자 조회
-      // NOTE: 세션 정보는 GoogleUser에 저장되어 있으므로, 이 객체를 세션 검사에 사용해야 합니다.
-      const googleUser = await GoogleUser.findById(decoded.userId);
-      if (!googleUser)
-        return res
-          .status(401)
-          .json({ message: "유효하지 않은 구글 사용자입니다." });
-
-      // 2) ⭐ 세션 유효성 검사: GoogleUser 객체에 대해 바로 수행
-      const isValidSession = googleUser.currentSessions?.some(
-        (session) =>
-          session.sessionId === decoded.sessionId && new Date(session.expiresAt) > new Date()
-      );
-
-      if (!isValidSession) {
-        console.log("[authMiddleware] 유효하지 않은 세션입니다. 중복 로그인?");
-        return res
-          .status(401)
-          .json({ message: "유효하지 않거나 만료된 세션입니다." });
-      }
-
-      // 3) UserMapping에서 googleUser.googleId로 매핑된 로컬 계정 조회 (req.user 설정 목적)
-      const mapping = await UserMapping.findOne({
-        providerUserId: googleUser.googleId, // 구글 계정 고유 ID (문자열)
-        provider: "google",
-      });
-
-
-      console.log("[authMiddleware] UserMapping 조회 결과:", mapping);
-
-      if (mapping) {
-        // 매핑된 로컬 계정이 있으면 User 컬렉션에서 조회하여 user에 할당
-        user = await User.findById(mapping.localId);
-      }
-
-      // 매핑된 로컬 계정이 없거나 조회 실패 시 GoogleUser 객체를 user에 할당
-      if (!user) {
-        user = googleUser;
-      }
-
-    } else {
-      return res
-        .status(401)
-        .json({ message: "유효하지 않은 토큰 정보입니다." });
-    }
-
-    // 인증 완료된 사용자 정보 요청 객체에 저장 후 다음 미들웨어로
-    req.user = user;
+    // 4. 인증 완료된 사용자 정보 요청 객체에 저장 후 다음 미들웨어로
+    req.user = user; // 항상 로컬 User 문서
     req.userType = decoded.userType;
     req.sessionId = decoded.sessionId;
     next();
   } catch (err) {
-    console.error("[authMiddleware] 인증 실패:", err);
+    console.error("[authMiddleware] Authentication failed:", err);
 
     if (err.name === "TokenExpiredError") {
       return res

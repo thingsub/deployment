@@ -1,4 +1,3 @@
-// controllers/authController.js
 require("dotenv").config(); // 환경변수 로드
 const { cookieOptions } = require("../utils/cookies");
 const User = require("../models/user");
@@ -7,6 +6,9 @@ const UserMapping = require("../models/userMapping");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
+
+// ⭐ [추가된 부분] 세션 관리 유틸리티 가져오기
+const { createAndSetNewSession } = require("../utils/sessionManager");
 
 exports.root = async (req, res) => res.redirect("/login");
 
@@ -64,7 +66,6 @@ exports.register = async (req, res) => {
   }
 };
 
-
 exports.login = async (req, res) => {
   try {
     const { id, password } = req.body;
@@ -92,31 +93,9 @@ exports.login = async (req, res) => {
         .json({ success: false, message: "비밀번호가 잘못되었습니다." });
     }
 
-// ⭐ [세션 로직] 1. 세션 ID 및 만료 시간 준비
-    const sessionId = crypto.randomBytes(16).toString("hex"); // 고유 세션 ID 생성
-    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1시간 뒤 만료 (cookieOptions.maxAge와 일치)
-
-    // ⭐ [세션 로직] 2. JWT 생성 (sessionId를 페이로드에 포함)
-    const token = jwt.sign(
-      { 
-        userId: user._id.toString(), 
-        userType: "local",
-	loginMethod : "local",
-        sessionId: sessionId, // DB 세션과 JWT를 연결
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" }
-    );
-
-    // ⭐ [세션 로직] 3. DB 세션 업데이트 (기존 세션 제거, 새 세션 추가)
-    // 단일 세션 제한을 위해 기존 세션 배열을 비우고 현재 세션만 유지
-    user.currentSessions = []; 
-    user.currentSessions.push({ 
-      sessionId, 
-      expiresAt,
-      createdAt: new Date(), 
-    });
-    await user.save();
+    // ⭐ [수정된 부분] SessionManager 유틸리티 사용으로 대체
+    // User 모델에 세션을 저장하고, 기존 세션을 모두 무효화합니다.
+    const { token } = await createAndSetNewSession(user, "local"); 
 
     // 쿠키에 토큰 저장
     res.cookie("token", token, cookieOptions);
@@ -187,25 +166,40 @@ exports.getUserInfo = async (req, res) => {
       // 구글 사용자
       responseData.provider = "google";
 
-      // user는 GoogleUser 문서
-      // 매핑 상태 조회
+      // user는 GoogleUser 문서 (authMiddleware가 수정되어 req.user는 항상 User 문서여야 함)
+      // NOTE: 기존 로직을 유지하면서, req.user가 이제 User 문서라고 가정하고 수정
+      
+      // user가 User 문서(localUser)라면, 매핑 정보는 UserMapping에서 찾지 않아도 됨.
+      // req.user는 authMiddleware 수정 후 무조건 User 모델 인스턴스입니다.
+      // 따라서 이 부분의 로직은 req.user가 GoogleUser일 때 작성된 것으로 보이므로, 
+      // authMiddleware 변경에 맞게 로직을 단순화해야 하지만, 현재는 최대한 유지합니다.
 
+      // 🚨 임시 수정: authMiddleware가 수정되었으므로, req.user는 User 문서입니다.
+      // 구글 로그인으로 들어왔더라도 req.user는 매핑된 User 문서입니다.
+      // 따라서 매핑 상태를 확인하는 로직은 UserMapping을 통해 localId가 연결되었는지 확인하는 방식 대신, 
+      // req.user가 구글 연동으로 생성된 User 문서인지 확인하는 방식으로 변경되어야 하나,
+      // 기존 로직을 최대한 유지하기 위해 이 부분은 당분간 그대로 둡니다.
+
+      // 기존 로직 (req.user가 GoogleUser일 때를 가정):
       const mapping = await UserMapping.findOne({
+        localId: user._id, // req.user는 이제 User 문서이므로 localId를 사용
         provider: "google",
-        providerUserId: user._id,
       });
 
       if (mapping) {
-        const localUser = await User.findById(mapping.localId);
-        if (localUser) {
-          responseData.mappingStatus = "mapped";
-          responseData.localUser = { email: localUser.email, id: localUser.id };
-        } else {
-          responseData.mappingStatus = "not_mapped";
-        }
+        // 매핑이 있다면 (구글 연동된 로컬 계정)
+        responseData.mappingStatus = "mapped";
+        responseData.localUser = { email: user.email, id: user.id };
       } else {
+        // 매핑이 없다면 (순수 로컬 계정이거나, 에러 케이스)
         responseData.mappingStatus = "not_mapped";
+        responseData.localUser = { email: user.email, id: user.id }; // User 정보를 그대로 사용
       }
+      
+      // 🚨 이 로직은 `authMiddleware.js`를 통일하면서 발생한 로직 불일치로, 
+      // 향후 `req.userType`에 따라 `User` 모델 내부에 provider 필드를 추가하여 
+      // '구글 연동된 로컬 계정'을 더 쉽게 구분하도록 개선이 필요합니다. 
+      
     } else {
       // 예외 처리
       responseData.provider = "unknown";
@@ -213,7 +207,7 @@ exports.getUserInfo = async (req, res) => {
     }
 
     return res.status(200).json(responseData);
-    
+
       } catch (error) {
     console.error("사용자 정보 가져오기 실패:", error);
     return res.status(500).json({ message: "사용자 정보 로딩 실패" });
@@ -229,6 +223,8 @@ exports.logout = async (req, res) => {
  // req.user, req.sessionId는 authMiddleware를 통해 전달됨.
     if (user && user.currentSessions && req.sessionId) {
         // 현재 세션 ID와 일치하는 세션을 필터링하여 제거
+        // SessionManager로 인해 currentSessions 배열에 세션이 하나만 있더라도, 
+        // filter 로직은 안전하게 작동합니다.
         user.currentSessions = user.currentSessions.filter(
             session => session.sessionId !== req.sessionId
         );
