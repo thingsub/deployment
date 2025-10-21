@@ -42,6 +42,16 @@ const NavBar = () => {
       });
       if (res.ok) {
         alert("로그아웃 되었습니다.");
+
+      // 로컬스토리지에서 BlockComposer 데이터 삭제
+      localStorage.removeItem("BlockComposer");
+
+      // 로그인 상태를 업데이트
+      setIsLoggedIn(false);
+
+      // 필요하면 페이지 새로 고침
+      window.location.reload(); 
+
         setIsLoggedIn(false);
         // 필요하면 루트 새로고침 또는 로그인 페이지 이동
         // window.location.href = "/auth/login";

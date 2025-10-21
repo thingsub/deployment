@@ -2,6 +2,7 @@ require("dotenv").config(); // 환경변수 로드
 const express = require("express");
 const bodyParser = require("body-parser");
 const authRoutes = require("./backend/routes/authRoutes"); // 인증 라우트 불러오기
+const composerRoutes = require("./backend/routes/composerRoutes");
 const db = require("./backend/database/db"); // DB 연결 모듈 불러오기
 const app = express();
 const path = require("path"); // path 모듈 추가
@@ -39,7 +40,7 @@ app.use(express.urlencoded({ extended: true }));
 // 1. 당신의 인증 API 라우팅을 먼저 처리
 // 이렇게 해야 auth로 시작하는 요청이 정적 파일로 처리되지 않습니다.
 app.use("/api/auth", authRoutes);
-
+app.use("/api/composer", composerRoutes);
 // 2. 당신의 React 앱(SPA)을 루트 경로('/')에 서비스
 app.use("/auth", express.static(path.join(__dirname, "frontend", "build")));
 

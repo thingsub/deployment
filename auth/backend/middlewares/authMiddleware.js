@@ -1,5 +1,5 @@
-const mongoose = require("mongoose");
 require("dotenv").config();
+const mongoose = require("mongoose");
 const User = require("../models/user");
 // GoogleUser는 세션 검사에 필요 없으므로 제거합니다.
 // const GoogleUser = require("../models/googleUser"); 
