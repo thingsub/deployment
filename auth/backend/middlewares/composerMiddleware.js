@@ -29,8 +29,8 @@ module.exports = async function composerMiddleware(req, res, next) {
         
         if (!user) {
             console.log(`[composerMiddleware] Invalid User ID in token: ${decoded.userId}`);
-	localStorage.removeItem('BlockComposer');
-	localStorage.removeItem('ScriptComposer');
+//	localStorage.removeItem('BlockComposer');
+//	localStorage.removeItem('ScriptComposer');
             req.user = null;
             return next();
         }
