@@ -6,9 +6,39 @@ const UserMapping = require("../models/userMapping");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
+const BlockComposer = require("../models/composer/blockComposer");
+const ScriptComposer = require("../models/composer/scriptComposer");
+const mongoose = require('mongoose');
 
 // ⭐ [추가된 부분] 세션 관리 유틸리티 가져오기
 const { createAndSetNewSession } = require("../utils/sessionManager");
+
+
+// 💡 Composer 데이터 조회 및 Local Storage 포맷으로 변환하는 헬퍼 함수
+const fetchComposerData = async (user, ComposerModel) => {
+    try {
+        // userId에 unique: true가 설정되어 있으므로 findOne으로 최신 이력을 가져옵니다.
+        const latestData = await ComposerModel.findOne({ userId: user._id });
+
+        // 저장된 이력이 없으면 null을 반환하여 프론트엔드가 Local Storage를 건드리지 않게 합니다.
+        if (!latestData) return null; 
+
+        // Local Storage JSON 형식에 맞게 데이터와 updatedAt을 포함하여 반환
+        return {
+            // BlockComposer의 경우 workspace 필드를 추가
+            ...(ComposerModel.modelName === 'BlockComposer' && { workspace: latestData.workspace }), 
+            options: latestData.options,
+            transcript: latestData.transcript,
+            updatedAt: latestData.updatedAt, // Local Storage 갱신 기준
+        };
+    } catch (error) {
+        // 서버 에러 발생 시 로그를 남기고 null 반환하여 로그인은 성공 처리
+        console.error(`Error fetching ${ComposerModel.modelName} data for user ${user.id}:`, error);
+        return null; 
+    }
+};
+
+
 
 exports.root = async (req, res) => res.redirect("/login");
 
@@ -100,7 +130,21 @@ exports.login = async (req, res) => {
     // 쿠키에 토큰 저장
     res.cookie("token", token, cookieOptions);
 
-    return res.status(200).json({ success: true, userId: user.id });
+
+// 💡 3. Composer 데이터 조회 (지연 발생 감수)
+        const blockComposerData = await fetchComposerData(user, BlockComposer);
+        const scriptComposerData = await fetchComposerData(user, ScriptComposer);
+
+        // 💡 4. 최종 응답에 Composer 데이터 포함
+        return res.status(200).json({ 
+            success: true, 
+            userId: user.id,
+            composerHistory: {
+                BlockComposer: blockComposerData,
+                ScriptComposer: scriptComposerData,
+            }
+        });
+
   } catch (error) {
     console.error("로그인 중 오류:", error);
     return res
@@ -151,9 +195,28 @@ exports.checkHome = async (req, res) => {
 exports.getUserInfo = async (req, res) => {
   try {
     const user = req.user;
-    let responseData = {
+console.log("[getUserInfo] user._id:", user._id, "타입:", typeof user._id);
+
+const responseData = {
       name: user.name,
       email: user.email,
+      id: user.id,
+      provider: req.userType,
+    };
+
+    // ✅ BlockComposer 데이터만 조회
+    const blockHistory = await BlockComposer.findOne({ userId: user._id }).sort({ updatedAt: -1 });
+
+
+    // ✅ composerHistory 필드에 BlockComposer만 포함
+    responseData.composerHistory = {
+      BlockComposer: blockHistory
+        ? {
+            workspace: blockHistory.workspace,
+            options: blockHistory.options,
+            transcript: blockHistory.transcript,
+          }
+        : null,
     };
 
     if (req.userType === "local") {
@@ -206,7 +269,9 @@ exports.getUserInfo = async (req, res) => {
       responseData.mappingStatus = null;
     }
 
+console.log("Response user info:", responseData);
     return res.status(200).json(responseData);
+console.log("[getUserInfo] 최종 응답 데이터:", JSON.stringify(responseData, null, 2));
 
       } catch (error) {
     console.error("사용자 정보 가져오기 실패:", error);

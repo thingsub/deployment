@@ -78,8 +78,14 @@ const Login = ({ isAuthenticated, setIsAuthenticated }) => {
       const response = await login(id, password);
 
       if (response.status === 200) {
-setIsAuthenticated(true);  // 인증 상태 갱신
+
+
+	setIsAuthenticated(true);  // 인증 상태 갱신
+
+setTimeout(() => {
         navigate("/home");
+      }, 200); // 200ms 지연
+
       }
     } catch (error) {
       const status = error.response?.status;

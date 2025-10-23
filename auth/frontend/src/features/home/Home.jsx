@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 //import { getUserInfo, checkAccountMapping, logoutUser } from "../../api/auth";
 import { getUserInfo, checkAccountMapping} from "../../api/auth";
+import { preloadComposerToLocalStorage } from "../../utils/localStorageSync";
 
 import {
   Container,
@@ -29,7 +30,20 @@ const Home = () => {
     getUserInfo()
       .then((res) => {
         if (!res.data) throw new Error("No user data");
+
+      console.log("[Home.jsx] userInfo:", res.data);
+      console.log("[Home.jsx] composerHistory:", res.data.composerHistory);
+
         setUserInfo(res.data);
+
+      // 251022 로컬스토리지 composer 데이터 세팅
+	if (res.data.composerHistory) {
+        preloadComposerToLocalStorage(res.data.composerHistory);
+      } 
+	else {
+        console.warn("[Home.jsx] composerHistory not found in user data");
+      }
+
         return checkAccountMapping();
       })
       .then((res) => {

@@ -7,7 +7,6 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
-
 import { getUserInfo } from "./api/auth"; // 모듈화된 API 함수 import
 import styled from "styled-components"; // styled-components import
 import { ThemeProvider } from "styled-components"; // ThemeProvider 임포트
@@ -31,10 +30,13 @@ const LoadingContainer = styled.div`
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
-
+const [userInfo, setUserInfo] = useState(null);
   useEffect(() => {
     getUserInfo()
-      .then(() => setIsAuthenticated(true))
+      .then((data) => {
+      setUserInfo(data);
+      setIsAuthenticated(true);
+    })
       .catch(() => setIsAuthenticated(false));
   }, []);
 
@@ -71,7 +73,7 @@ const App = () => {
           <Route path="/google/callback" element={<GoogleCallback />} />
           <Route
             path="/home"
-            element={isAuthenticated ? <Home /> : <Navigate to="/login" />}
+            element={isAuthenticated ? <Home userInfo={userInfo} /> : <Navigate to="/login" />}
           />
           <Route
             path="/account-settings"
